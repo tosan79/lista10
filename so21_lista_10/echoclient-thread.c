@@ -119,6 +119,12 @@ int main(int argc, char **argv) {
   Signal(SIGINT, sigint_handler);
 
   /* TODO: Start threads and wait for them to finish. */
+  pthread_t tid[nthreads];
+  for (int i = 0; i < nthreads; i++)
+    Pthread_create(&tid[i], NULL, thread, NULL);
+
+  for (int i = 0; i < nthreads; i++)
+    Pthread_join(tid[i], NULL);
 
   free(text);
 }

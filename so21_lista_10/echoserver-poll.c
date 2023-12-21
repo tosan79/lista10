@@ -97,11 +97,33 @@ int main(int argc, char **argv) {
       continue;
 
     /* TODO: If listening descriptor ready, add new client to the pool. */
+    if (fds[0].revents & POLLIN)
+    {
+      struct sockaddr_storage addr;
+      socklen_t addrlen = sizeof(struct sockaddr_storage);
+      int clientfd = Accept(listenfd, (SA *)&addr, &addrlen);
+
+      static char hostname[MAXLINE], port[MAXLINE];
+      Getnameinfo((SA *)&addr, addrlen, hostname, MAXLINE, port, MAXLINE, 0);
+      addclient(clientfd, hostname, port);
+
+      nready--;
+    }
 
     /* TODO: Echo a text line from each ready connected descriptor.
      * Delete a client when end-of-file condition was detected on socket. */
     int i = 1;
     while (nready > 0) {
+     if (fds[i].revents & POLLIN)
+      {
+        int bytes_read = clientread(i);
+        if (bytes_read == 0)
+        {
+          delclient(i);
+          i--;
+        }
+        nready--;
+      }
     }
   }
 
